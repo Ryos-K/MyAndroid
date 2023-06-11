@@ -2,21 +2,19 @@ package com.example.myandroid.ui.theme.counter
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,15 +32,25 @@ const val COUNTER_LIMIT = 99
 
 @Composable
 fun CounterScreen() {
+    val listState = rememberLazyListState()
+    val isExpanded by remember {
+        derivedStateOf { listState.firstVisibleItemIndex == 0 }
+    }
     Scaffold(
-        floatingActionButton = { CounterFAB() }
+        floatingActionButton = {
+            CounterFAB(
+                modifier = Modifier.wrapContentSize(),
+                isExpanded = isExpanded
+            )
+        }
     ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(it),
+            state = listState
         ) {
-            repeat(5) {
+            repeat(8) {
                 item {
                     CounterCard(
                         modifier = Modifier
@@ -138,19 +146,30 @@ fun CounterFAB(
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     isExpanded: Boolean = true,
-    shape: Shape = MaterialTheme.shapes.small,
+    shape: Shape = RoundedCornerShape(16.dp),
     backgroundColor: Color = MaterialTheme.colors.secondary,
     contentColor: Color = contentColorFor(backgroundColor),
 ) {
-    ExtendedFloatingActionButton(
-        text = { Text(if (isExpanded) "Add" else "") },
+    FloatingActionButton(
         onClick = { onClick() },
         modifier = modifier,
-        icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = "Add Counter") },
-        shape = RoundedCornerShape(16.dp),
+        shape = shape,
         backgroundColor = backgroundColor,
         contentColor = contentColor
-    )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+                .animateContentSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(imageVector = Icons.Filled.Add, contentDescription = "Add Counter")
+            if (isExpanded) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Add", fontSize = 20.sp)
+            }
+        }
+    }
 }
 
 @Composable
