@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,7 +64,7 @@ fun CounterScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CounterSuccessScreen(
-    counterCardList: List<CounterCardUiState>,
+    counterCardList: List<CounterUiState>,
     onDelete: (Int) -> Unit,
     onClickPlus: (Int) -> Unit,
     onClickMinus: (Int) -> Unit
@@ -104,7 +107,7 @@ fun CounterSuccessScreen(
 @Composable
 fun CounterCard(
     modifier: Modifier = Modifier,
-    uiState: CounterCardUiState,
+    uiState: CounterUiState,
     onDelete: () -> Unit,
     onClickPlus: () -> Unit,
     onClickMinus: () -> Unit,
@@ -216,14 +219,28 @@ fun CounterFAB(
 }
 
 @Composable
-fun CounterRenameDialog(title: String, onDismiss: () -> Unit, onDone: (String) -> Unit) {
+fun CounterDialog(onDismiss: () -> Unit, onDone: (String) -> Unit) {
     Dialog(onDismissRequest = { onDismiss() }) {
-        var value by remember { mutableStateOf("") }
-        Card() {
+        var text by remember { mutableStateOf("") }
+        Card {
             Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Rename -> '$title'", fontSize = 30.sp)
-                TextField(value = value, onValueChange = { value = it })
-                Button(onClick = { onDone(value) }) {
+                Text("Add Counter", fontSize = 30.sp)
+                Spacer(modifier = Modifier.height(16.dp))
+                TextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text("New Counter Title") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        onDone(text)
+                        text = ""
+                    })
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = {
+                    onDone(text)
+                    text = ""
+                }) {
                     Text("Done")
                 }
             }
@@ -232,17 +249,17 @@ fun CounterRenameDialog(title: String, onDismiss: () -> Unit, onDone: (String) -
 }
 
 
-@Composable
-@Preview(uiMode = UI_MODE_NIGHT_YES, showBackground = true)
-@Preview(uiMode = UI_MODE_NIGHT_NO, showBackground = true)
-fun CounterPreview() {
-    MyAndroidTheme {
-        Surface() {
-            val counterViewModel by remember { mutableStateOf(CounterViewModel()) }
-            CounterScreen(counterViewModel)
-        }
-    }
-}
+//@Composable
+//@Preview(uiMode = UI_MODE_NIGHT_YES, showBackground = true)
+//@Preview(uiMode = UI_MODE_NIGHT_NO, showBackground = true)
+//fun CounterPreview() {
+//    MyAndroidTheme {
+//        Surface() {
+//            val counterViewModel by remember { mutableStateOf(CounterViewModel()) }
+//            CounterScreen(counterViewModel)
+//        }
+//    }
+//}
 
 @Composable
 @Preview
@@ -260,14 +277,14 @@ fun CounterSuccessScreenPreview() {
     MyAndroidTheme {
         Surface {
             val list = listOf(
-                CounterCardUiState(1, "Counter 1", 0),
-                CounterCardUiState(2, "Counter 2", 2),
-                CounterCardUiState(3, "Counter 3", 4),
-                CounterCardUiState(4, "Counter 4", 10),
-                CounterCardUiState(5, "Counter 5", 40),
-                CounterCardUiState(6, "Counter 6", 50),
-                CounterCardUiState(7, "Counter 7", 60),
-                CounterCardUiState(8, "Counter 8", 70),
+                CounterUiState(1, "Counter 1", 0),
+                CounterUiState(2, "Counter 2", 2),
+                CounterUiState(3, "Counter 3", 4),
+                CounterUiState(4, "Counter 4", 10),
+                CounterUiState(5, "Counter 5", 40),
+                CounterUiState(6, "Counter 6", 50),
+                CounterUiState(7, "Counter 7", 60),
+                CounterUiState(8, "Counter 8", 70),
             )
             CounterSuccessScreen(
                 counterCardList = list,
@@ -280,10 +297,10 @@ fun CounterSuccessScreenPreview() {
 
 @Composable
 @Preview
-fun CounterRenameDialogPreview() {
+fun CounterDialogPreview() {
     MyAndroidTheme() {
         Surface {
-            CounterRenameDialog(title = "Counter 1", onDismiss = {}, onDone = {})
+            CounterDialog(onDismiss = {}, onDone = {})
         }
     }
 }
