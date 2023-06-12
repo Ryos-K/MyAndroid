@@ -27,6 +27,17 @@ class CounterViewModel(
         }
     }
 
+    fun insertCounterCard(text: String) {
+        viewModelScope.launch {
+            counterRepository.insert(
+                com.example.myandroid.data.Counter(
+                    id = 0,
+                    title = text,
+                    counter = 0
+                )
+            )
+        }
+    }
 
     fun deleteCounterCard(id: Int) {
         viewModelScope.launch {
@@ -37,7 +48,7 @@ class CounterViewModel(
     fun incrementCounter(id: Int) {
         viewModelScope.launch {
             val currentState = _counterState.value
-            if(currentState is CounterState.Success) {
+            if (currentState is CounterState.Success) {
                 counterRepository.incrementCounterById(id)
             }
         }
@@ -46,7 +57,7 @@ class CounterViewModel(
     fun decrementCounter(id: Int) {
         viewModelScope.launch {
             val currentState = _counterState.value
-            if(currentState is CounterState.Success) {
+            if (currentState is CounterState.Success) {
                 counterRepository.decrementCounterById(id)
             }
         }

@@ -52,7 +52,8 @@ fun CounterScreen(
                 counterCardList = counterCardList,
                 onDelete = { id -> viewModel.deleteCounterCard(id) },
                 onClickPlus = { id -> viewModel.incrementCounter(id) },
-                onClickMinus = { id -> viewModel.decrementCounter(id) }
+                onClickMinus = { id -> viewModel.decrementCounter(id) },
+                onDoneDialog = { text -> viewModel.insertCounterCard(text) }
             )
         }
         is CounterState.Error -> {
@@ -67,21 +68,32 @@ fun CounterSuccessScreen(
     counterCardList: List<CounterUiState>,
     onDelete: (Int) -> Unit,
     onClickPlus: (Int) -> Unit,
-    onClickMinus: (Int) -> Unit
+    onClickMinus: (Int) -> Unit,
+    onDoneDialog: (String) -> Unit
 ) {
     val listState = rememberLazyListState()
     val isExpanded by remember {
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
+    }
+    var showDialog by remember {
+        mutableStateOf(false)
     }
 
     Scaffold(
         floatingActionButton = {
             CounterFAB(
                 modifier = Modifier.wrapContentSize(),
+                onClick = { showDialog = true },
                 isExpanded = isExpanded
             )
         }
     ) {
+        if (showDialog) {
+            CounterDialog(onDismiss = { showDialog = false }, onDone = { text ->
+                onDoneDialog(text)
+                showDialog = false
+            })
+        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -290,7 +302,9 @@ fun CounterSuccessScreenPreview() {
                 counterCardList = list,
                 onDelete = {},
                 onClickPlus = {},
-                onClickMinus = {})
+                onClickMinus = {},
+                onDoneDialog = {}
+            )
         }
     }
 }
