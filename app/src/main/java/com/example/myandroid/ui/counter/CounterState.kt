@@ -1,4 +1,4 @@
-package com.example.myandroid.ui.theme.counter
+package com.example.myandroid.ui.counter
 
 data class CounterCardUiState(
     val id: Int,

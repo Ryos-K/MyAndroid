@@ -1,4 +1,4 @@
-package com.example.myandroid.ui.theme.counter
+package com.example.myandroid.ui.counter
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES

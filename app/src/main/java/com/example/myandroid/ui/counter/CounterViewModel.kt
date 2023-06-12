@@ -1,6 +1,5 @@
-package com.example.myandroid.ui.theme.counter
+package com.example.myandroid.ui.counter
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
