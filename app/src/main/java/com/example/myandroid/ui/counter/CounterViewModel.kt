@@ -1,8 +1,12 @@
 package com.example.myandroid.ui.counter
 
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myandroid.data.Counter
 import com.example.myandroid.data.CounterRepository
 import com.example.myandroid.data.toCounterUiState
 import kotlinx.coroutines.delay
@@ -18,6 +22,27 @@ class CounterViewModel(
     private val _counterState = MutableStateFlow<CounterState>(CounterState.Loading)
     val counterState = _counterState.asStateFlow()
 
+    private val filterText = MutableStateFlow("")
+
+    val filteredState = filterText.combine(_counterState) { filter, state ->
+        filterByTitle(state, filter)
+    }
+
+    private fun filterByTitle(state: CounterState, filter: String): CounterState {
+        return when (state) {
+            is CounterState.Success -> {
+                if (filter == "") {
+                    state
+                }else {
+                    val filtered = state.counterCards.filter { it.title.startsWith(filter) }
+                    CounterState.Success(filtered)
+                }
+            }
+            else -> {
+                state
+            }
+        }
+    }
 
     init {
         viewModelScope.launch {
@@ -60,6 +85,12 @@ class CounterViewModel(
             if (currentState is CounterState.Success) {
                 counterRepository.decrementCounterById(id)
             }
+        }
+    }
+
+    fun setFilterText(text: String) {
+        viewModelScope.launch {
+            filterText.emit(text)
         }
     }
 }

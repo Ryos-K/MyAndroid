@@ -14,29 +14,31 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewModelScope
 import com.example.myandroid.ui.theme.MyAndroidTheme
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun CounterScreen(
     viewModel: CounterViewModel
 ) {
-    val state = viewModel.counterState.collectAsState().value
+    val state = viewModel.filteredState.collectAsState(CounterState.Loading).value
     when (state) {
         is CounterState.Loading -> {
             Box(
@@ -47,13 +49,14 @@ fun CounterScreen(
             }
         }
         is CounterState.Success -> {
-            val counterCardList = state.counterCards
+
             CounterSuccessScreen(
-                counterCardList = counterCardList,
+                counterCardList = state.counterCards,
                 onDelete = { id -> viewModel.deleteCounterCard(id) },
                 onClickPlus = { id -> viewModel.incrementCounter(id) },
                 onClickMinus = { id -> viewModel.decrementCounter(id) },
-                onDoneDialog = { text -> viewModel.insertCounterCard(text) }
+                onDoneDialog = { text -> viewModel.insertCounterCard(text) },
+                onSearch = { text -> viewModel.setFilterText(text) }
             )
         }
         is CounterState.Error -> {
@@ -66,10 +69,11 @@ fun CounterScreen(
 @Composable
 fun CounterSuccessScreen(
     counterCardList: List<CounterUiState>,
-    onDelete: (Int) -> Unit,
-    onClickPlus: (Int) -> Unit,
-    onClickMinus: (Int) -> Unit,
-    onDoneDialog: (String) -> Unit
+    onDelete: (Int) -> Unit = {},
+    onClickPlus: (Int) -> Unit = {},
+    onClickMinus: (Int) -> Unit = {},
+    onDoneDialog: (String) -> Unit = {},
+    onSearch: (String) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val isExpanded by remember {
@@ -80,6 +84,12 @@ fun CounterSuccessScreen(
     }
 
     Scaffold(
+        bottomBar = {
+            CounterBottomAppBar(
+                modifier = Modifier.fillMaxWidth(),
+                onValueChange = onSearch
+            )
+        },
         floatingActionButton = {
             CounterFAB(
                 modifier = Modifier.wrapContentSize(),
@@ -115,6 +125,48 @@ fun CounterSuccessScreen(
     }
 }
 
+@Composable
+fun CounterBottomAppBar(
+    modifier: Modifier = Modifier,
+    onValueChange: (String) -> Unit = {},
+) {
+    val focusManager = LocalFocusManager.current
+    var text by remember { mutableStateOf("") }
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        TextField(
+            value = text,
+            onValueChange = {
+                text = it
+                onValueChange(it)
+            },
+            modifier = Modifier
+                .padding(4.dp)
+                .fillMaxWidth(),
+            label = { Text("Search Title") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = "Search",
+                    modifier = Modifier.padding(16.dp)
+                )
+            },
+            trailingIcon = {
+                IconButton(onClick = {
+                    text = ""
+                    onValueChange("")
+                }) {
+                    Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete Line")
+                }
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+        )
+    }
+}
 
 @Composable
 fun CounterCard(
@@ -185,7 +237,11 @@ fun Counter(
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colors.primary)
             ) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add")
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Add",
+                    tint = MaterialTheme.colors.onPrimary
+                )
             }
             IconButton(
                 onClick = { onClickMinus() },
@@ -193,7 +249,11 @@ fun Counter(
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colors.primary)
             ) {
-                Icon(imageVector = Icons.Filled.Remove, contentDescription = "Remove")
+                Icon(
+                    imageVector = Icons.Filled.Remove,
+                    contentDescription = "Remove",
+                    tint = MaterialTheme.colors.onPrimary
+                )
             }
         }
     }
@@ -315,6 +375,19 @@ fun CounterDialogPreview() {
     MyAndroidTheme() {
         Surface {
             CounterDialog(onDismiss = {}, onDone = {})
+        }
+    }
+}
+
+@Composable
+@Preview
+fun CounterBottomAppBarPreview() {
+    MyAndroidTheme {
+        Surface {
+            CounterBottomAppBar(
+                modifier = Modifier.background(MaterialTheme.colors.primary),
+                onValueChange = {}
+            )
         }
     }
 }
