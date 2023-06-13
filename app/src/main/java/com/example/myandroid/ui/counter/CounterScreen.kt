@@ -49,14 +49,16 @@ fun CounterScreen(
             }
         }
         is CounterState.Success -> {
-
             CounterSuccessScreen(
                 counterCardList = state.counterCards,
-                onDelete = { id -> viewModel.deleteCounterCard(id) },
+                onDelete = { counter -> viewModel.deleteCounterCard(counter) },
                 onClickPlus = { id -> viewModel.incrementCounter(id) },
                 onClickMinus = { id -> viewModel.decrementCounter(id) },
                 onDoneDialog = { text -> viewModel.insertCounterCard(text) },
-                onSearch = { text -> viewModel.setFilterText(text) }
+                onSearch = { text -> viewModel.setFilterText(text) },
+                shouldDisplayUndoSnackbar = viewModel.shouldShowSnackbar,
+                onDismissSnackbar = {viewModel.clearUndo()},
+                onAcceptSnackbar = {viewModel.acceptUndo()},
             )
         }
         is CounterState.Error -> {
@@ -67,15 +69,19 @@ fun CounterScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CounterSuccessScreen(
+private fun CounterSuccessScreen(
     counterCardList: List<CounterUiState>,
-    onDelete: (Int) -> Unit = {},
+    onDelete: (CounterUiState) -> Unit = {},
     onClickPlus: (Int) -> Unit = {},
     onClickMinus: (Int) -> Unit = {},
     onDoneDialog: (String) -> Unit = {},
     onSearch: (String) -> Unit = {},
+    shouldDisplayUndoSnackbar: Boolean = false,
+    onDismissSnackbar: ()-> Unit = {},
+    onAcceptSnackbar: () -> Unit = {}
 ) {
     val listState = rememberLazyListState()
+    val scaffoldState: ScaffoldState = rememberScaffoldState()
     val isExpanded by remember {
         derivedStateOf { listState.firstVisibleItemIndex == 0 }
     }
@@ -83,7 +89,18 @@ fun CounterSuccessScreen(
         mutableStateOf(false)
     }
 
+    LaunchedEffect(key1 = shouldDisplayUndoSnackbar) {
+        if(shouldDisplayUndoSnackbar) {
+            val result = scaffoldState.snackbarHostState.showSnackbar("Delete Counter", "Undo")
+            when (result) {
+                SnackbarResult.Dismissed -> onDismissSnackbar()
+                SnackbarResult.ActionPerformed -> onAcceptSnackbar()
+            }
+        }
+    }
+
     Scaffold(
+        scaffoldState = scaffoldState,
         bottomBar = {
             CounterBottomAppBar(
                 modifier = Modifier.fillMaxWidth(),
@@ -116,7 +133,9 @@ fun CounterSuccessScreen(
                         .animateItemPlacement()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     uiState = card,
-                    onDelete = { onDelete(card.id) },
+                    onDelete = {
+                        onDelete(card)
+                    },
                     onClickPlus = { onClickPlus(card.id) },
                     onClickMinus = { onClickMinus(card.id) }
                 )
@@ -126,7 +145,7 @@ fun CounterSuccessScreen(
 }
 
 @Composable
-fun CounterBottomAppBar(
+private fun CounterBottomAppBar(
     modifier: Modifier = Modifier,
     onValueChange: (String) -> Unit = {},
 ) {
@@ -169,7 +188,7 @@ fun CounterBottomAppBar(
 }
 
 @Composable
-fun CounterCard(
+private fun CounterCard(
     modifier: Modifier = Modifier,
     uiState: CounterUiState,
     onDelete: () -> Unit,
@@ -210,7 +229,7 @@ fun CounterCard(
 
 
 @Composable
-fun Counter(
+private fun Counter(
     modifier: Modifier = Modifier,
     counter: Int,
     onClickPlus: () -> Unit,
@@ -260,7 +279,7 @@ fun Counter(
 }
 
 @Composable
-fun CounterFAB(
+private fun CounterFAB(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     isExpanded: Boolean = true,
@@ -291,7 +310,7 @@ fun CounterFAB(
 }
 
 @Composable
-fun CounterDialog(onDismiss: () -> Unit, onDone: (String) -> Unit) {
+private fun CounterDialog(onDismiss: () -> Unit, onDone: (String) -> Unit) {
     Dialog(onDismissRequest = { onDismiss() }) {
         var text by remember { mutableStateOf("") }
         Card {

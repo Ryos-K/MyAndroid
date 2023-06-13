@@ -1,16 +1,16 @@
 package com.example.myandroid.ui.counter
 
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myandroid.data.Counter
 import com.example.myandroid.data.CounterRepository
 import com.example.myandroid.data.toCounterUiState
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 const val COUNTER_LIMIT = 99
@@ -27,6 +27,9 @@ class CounterViewModel(
     val filteredState = filterText.combine(_counterState) { filter, state ->
         filterByTitle(state, filter)
     }
+
+    var shouldShowSnackbar by mutableStateOf(false)
+    private var lastDeleteCounter: Counter? = null
 
     private fun filterByTitle(state: CounterState, filter: String): CounterState {
         return when (state) {
@@ -55,7 +58,7 @@ class CounterViewModel(
     fun insertCounterCard(text: String) {
         viewModelScope.launch {
             counterRepository.insert(
-                com.example.myandroid.data.Counter(
+                Counter(
                     id = 0,
                     title = text,
                     counter = 0
@@ -64,9 +67,11 @@ class CounterViewModel(
         }
     }
 
-    fun deleteCounterCard(id: Int) {
+    fun deleteCounterCard(counter: CounterUiState) {
         viewModelScope.launch {
-            counterRepository.deleteById(id)
+            counterRepository.deleteById(counter.id)
+            lastDeleteCounter = counter.toCounter()
+            shouldShowSnackbar = true
         }
     }
 
@@ -91,6 +96,20 @@ class CounterViewModel(
     fun setFilterText(text: String) {
         viewModelScope.launch {
             filterText.emit(text)
+        }
+    }
+
+    fun clearUndo() {
+        shouldShowSnackbar = false
+        lastDeleteCounter = null
+    }
+
+    fun acceptUndo() {
+        shouldShowSnackbar = false
+        viewModelScope.launch {
+            lastDeleteCounter?.let {
+                counterRepository.insert(it)
+            }
         }
     }
 }
