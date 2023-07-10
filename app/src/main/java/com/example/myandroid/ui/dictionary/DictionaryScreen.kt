@@ -12,18 +12,50 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myandroid.data.remote.DictionaryService
 import com.example.myandroid.ui.theme.MyAndroidTheme
+import com.example.myandroid.utils.MyResult
 
 @Composable
 fun DictionaryScreen(
     viewModel: DictionaryViewModel
 ) {
-    Column {
-        SearchBar(modifier = Modifier.fillMaxWidth())
-        WordDescriptionCard(modifier = Modifier.fillMaxWidth().padding(8.dp), word = "aaa", descriptions = listOf("aiueo", "asdfdsaoih"))
+    val wordDefinition = viewModel.wordDefinitionState.collectAsState().value
+    Column(modifier = Modifier) {
+        SearchBar(
+            modifier = Modifier.fillMaxWidth().padding(4.dp),
+            onValueChange = { text -> viewModel.loadWordDefinition(text) })
+        when (wordDefinition) {
+            is MyResult.Loading -> Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+            is MyResult.Success -> {
+                WordDefinitionCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    word = wordDefinition.data.word, definitions = wordDefinition.data.definitions)
+            }
+            is MyResult.Error -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = wordDefinition.e.message ?: "Unknown Error",
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -62,10 +94,10 @@ fun SearchBar(
 }
 
 @Composable
-fun WordDescriptionCard(
+fun WordDefinitionCard(
     modifier: Modifier = Modifier,
     word: String,
-    descriptions: List<String>,
+    definitions: List<String>,
 ) {
     Card(
         modifier = modifier,
@@ -79,12 +111,12 @@ fun WordDescriptionCard(
         ) {
             Text(text = word, fontSize = 24.sp)
             Divider()
-            descriptions.forEachIndexed {id, description ->
+            definitions.forEachIndexed { id, definition ->
                 Row(
                     modifier = Modifier.padding(vertical = 8.dp)
                 ) {
                     Text(text = (id + 1).toString() + ". ")
-                    Text(text = description)
+                    Text(text = definition)
                 }
             }
         }
@@ -96,7 +128,7 @@ fun WordDescriptionCard(
 fun DictionaryScreenPreview() {
     MyAndroidTheme {
         Surface {
-            DictionaryScreen(viewModel = DictionaryViewModel())
+//            DictionaryScreen(viewModel = DictionaryViewModel())
         }
     }
 }
@@ -116,10 +148,10 @@ fun SearchBarPreview() {
 fun WordDescriptionCardPreview() {
     MyAndroidTheme {
         Surface {
-            WordDescriptionCard(
+            WordDefinitionCard(
                 modifier = Modifier.fillMaxWidth(),
                 word = "Hello",
-                descriptions = listOf("Greeting", "Hi")
+                definitions = listOf("Greeting", "Hi")
             )
         }
     }
