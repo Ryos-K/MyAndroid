@@ -27,8 +27,10 @@ fun DictionaryScreen(
     val wordDefinition = viewModel.wordDefinitionState.collectAsState().value
     Column(modifier = Modifier) {
         SearchBar(
-            modifier = Modifier.fillMaxWidth().padding(4.dp),
-            onValueChange = { text -> viewModel.loadWordDefinition(text) })
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            onSearch = { text -> viewModel.loadWordDefinition(text) })
         when (wordDefinition) {
             is MyResult.Loading -> Box(
                 modifier = Modifier.fillMaxSize(),
@@ -41,7 +43,8 @@ fun DictionaryScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    word = wordDefinition.data.word, definitions = wordDefinition.data.definitions)
+                    word = wordDefinition.data.word, definitions = wordDefinition.data.definitions
+                )
             }
             is MyResult.Error -> {
                 Box(
@@ -62,7 +65,7 @@ fun DictionaryScreen(
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    onValueChange: (String) -> Unit = {},
+    onSearch: (String) -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
     var text by remember { mutableStateOf("") }
@@ -74,21 +77,23 @@ fun SearchBar(
         TextField(
             modifier = Modifier.fillMaxWidth(),
             value = text,
-            onValueChange = { text = it; onValueChange(text) },
+            onValueChange = { text = it },
             label = { Text(text = "Search Word") },
             leadingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = "Search"
-                )
+                IconButton(onClick = { onSearch(text) }) {
+                    Icon(
+                        imageVector = Icons.Filled.Search,
+                        contentDescription = "Search"
+                    )
+                }
             },
             trailingIcon = {
-                IconButton(onClick = { text = ""; onValueChange(text) }) {
+                IconButton(onClick = { text = "" }) {
                     Icon(imageVector = Icons.Filled.Close, contentDescription = "Delete Line")
                 }
             },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { onSearch(text); focusManager.clearFocus() })
         )
     }
 }

@@ -23,9 +23,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyAndroidTheme {
                 Surface {
-                    val wordInfoRepository = WordInfoRepository(DictionaryService.create())
+                    val wordDefinitionDao = (application as MyApplication).database.wordDefinitionDao()
+                    val wordInfoRepository = WordInfoRepository(wordDefinitionDao, DictionaryService.create())
                     val viewModel = DictionaryViewModel(wordInfoRepository)
                     DictionaryScreen(viewModel = viewModel)
+
                 }
             }
         }
