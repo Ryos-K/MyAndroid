@@ -8,6 +8,8 @@ import com.example.myandroid.utils.MyResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.util.*
 
 class DictionaryViewModel(
     private val wordInfoRepository: WordInfoRepository
@@ -16,7 +18,7 @@ class DictionaryViewModel(
     private val _searchedState = MutableStateFlow<MyResult<WordDefinition>>(MyResult.Loading())
     val searchedState = _searchedState.asStateFlow()
 
-    val historyState = wordInfoRepository.observeAll()
+    val historyState = wordInfoRepository.observeRegistered()
 
     fun loadWordDefinition(word: String) {
         viewModelScope.launch {
@@ -27,6 +29,28 @@ class DictionaryViewModel(
             } catch (e: Exception) {
                 _searchedState.value = MyResult.Error(e)
             }
+        }
+    }
+
+    fun register(wordDefinition: WordDefinition) {
+        viewModelScope.launch {
+            wordInfoRepository.upsert(
+                wordDefinition.copy(
+                    registered = true,
+                    registeredAt = Date()
+                ).asWordDefinitionEntity()
+            )
+        }
+    }
+
+    fun unregister(wordDefinition: WordDefinition) {
+        viewModelScope.launch {
+            wordInfoRepository.upsert(
+                wordDefinition.copy(
+                    registered = false,
+                    registeredAt = null
+                ).asWordDefinitionEntity()
+            )
         }
     }
 }

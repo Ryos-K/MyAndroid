@@ -8,9 +8,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,17 +38,19 @@ fun DictionaryScreen(
             0 -> Search(
                 modifier = Modifier.weight(1f),
                 onSearch = { text -> viewModel.loadWordDefinition(text) },
-                result = wordDefinitionState.value
+                result = wordDefinitionState.value,
+                onRegister = viewModel::register
             )
             1 -> History(
                 modifier = Modifier.weight(1f),
-                wordDefinitionList = historyState.value
+                wordDefinitionList = historyState.value,
+                onUnregister = viewModel::unregister
             )
         }
         BottomBar(
             items = listOf(
                 Pair("Search", Icons.Filled.Search),
-                Pair("History", Icons.Filled.History)
+                Pair("History", Icons.Filled.EditNote)
             ), selectedItem = current,
             onSelect = { index -> current = index }
         )
@@ -61,8 +61,9 @@ fun DictionaryScreen(
 @Composable
 fun Search(
     modifier: Modifier = Modifier,
-    onSearch: (String) -> Unit,
+    onSearch: (String) -> Unit = {},
     result: MyResult<WordDefinition>,
+    onRegister: (WordDefinition) -> Unit = {},
 ) {
     Column(modifier = modifier) {
         SearchBar(
@@ -88,6 +89,9 @@ fun Search(
                                 .fillMaxWidth()
                                 .padding(8.dp),
                             word = result.data.word, definitions = result.data.definitions
+                        , optionIcon = { IconButton(onClick = { onRegister(result.data) }) {
+                                Icon(imageVector = Icons.Filled.EditNote, contentDescription = "remove word from history")
+                            }}
                         )
                     }
                 }
@@ -112,6 +116,7 @@ fun Search(
 fun History(
     modifier: Modifier = Modifier,
     wordDefinitionList: List<WordDefinition>,
+    onUnregister: (WordDefinition) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier
@@ -121,7 +126,10 @@ fun History(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
-                word = item.word, definitions = item.definitions
+                word = item.word, definitions = item.definitions,
+                optionIcon = { IconButton(onClick = { onUnregister(item) }) {
+                    Icon(imageVector = Icons.Filled.Remove, contentDescription = "register word")
+                }}
             )
         }
     }
@@ -189,6 +197,7 @@ fun WordDefinitionCard(
     modifier: Modifier = Modifier,
     word: String,
     definitions: List<String>,
+    optionIcon: @Composable (() -> Unit) = {}
 ) {
     Card(
         modifier = modifier,
@@ -200,7 +209,14 @@ fun WordDefinitionCard(
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Text(text = word, fontSize = 24.sp)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = word, fontSize = 24.sp)
+                optionIcon()
+            }
             Divider()
             definitions.forEachIndexed { id, definition ->
                 Row(

@@ -11,7 +11,9 @@ data class WordInfoDto(
             word = this.word,
             definitions = this.meanings.map {
                 it.definitions.map { definitionDto -> definitionDto.definition}
-            }.flatten()
+            }.flatten(),
+            registered = false,
+            registeredAt = null
         )
     }
 }

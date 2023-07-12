@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.squareup.moshi.Moshi
 
 
-@Database(entities = [WordDefinitionEntity::class], version = 1, exportSchema = false)
+@Database(entities = [WordDefinitionEntity::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordDefinitionDao(): WordDefinitionDao

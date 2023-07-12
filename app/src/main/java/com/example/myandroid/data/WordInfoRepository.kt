@@ -1,6 +1,7 @@
 package com.example.myandroid.data
 
 import com.example.myandroid.data.local.WordDefinitionDao
+import com.example.myandroid.data.local.WordDefinitionEntity
 import com.example.myandroid.data.local.asExternalModel
 import com.example.myandroid.data.remote.DictionaryService
 import com.example.myandroid.model.WordDefinition
@@ -28,4 +29,12 @@ class WordInfoRepository(
     }
 
     fun observeAll() : Flow<List<WordDefinition>> = dao.getAll().map { it.map { entity -> entity.asExternalModel() } }
+
+    fun observeRegistered() : Flow<List<WordDefinition>> = dao.getRegistered().map {it.map { entity -> entity.asExternalModel() }}
+
+    suspend fun delete(wordDefinitionEntity: WordDefinitionEntity) = dao.delete(wordDefinitionEntity)
+
+    suspend fun upsert(wordDefinitionEntity: WordDefinitionEntity) = dao.upsert(wordDefinitionEntity)
+
+
 }

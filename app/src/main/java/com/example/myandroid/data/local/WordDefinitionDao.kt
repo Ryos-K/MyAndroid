@@ -1,8 +1,7 @@
 package com.example.myandroid.data.local
 
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.Upsert
+import androidx.room.*
+import com.example.myandroid.model.WordDefinition
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -13,9 +12,17 @@ interface WordDefinitionDao {
     @Query("SELECT * FROM word_definitions WHERE word = :word")
     fun getByWord(word: String): WordDefinitionEntity?
 
+    @Query("SELECT * FROM word_definitions WHERE registered = true")
+    fun getRegistered() : Flow<List<WordDefinitionEntity>>
+
     @Upsert
-    fun upsert(wordDefinitionEntity: WordDefinitionEntity)
+    suspend fun upsert(wordDefinitionEntity: WordDefinitionEntity)
 
     @Query("SELECT EXISTS(SELECT * FROM word_definitions WHERE word = :word)")
-    fun exist(word: String): Boolean
+    suspend fun exist(word: String): Boolean
+
+    @Delete
+    suspend fun delete(wordDefinitionEntity: WordDefinitionEntity)
+
+
 }
