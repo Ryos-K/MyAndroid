@@ -8,6 +8,7 @@ import com.example.myandroid.utils.MyResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class WordInfoRepository(
@@ -25,4 +26,6 @@ class WordInfoRepository(
             }
         }
     }
+
+    fun observeAll() : Flow<List<WordDefinition>> = dao.getAll().map { it.map { entity -> entity.asExternalModel() } }
 }

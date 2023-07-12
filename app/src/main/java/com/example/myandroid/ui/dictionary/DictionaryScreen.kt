@@ -1,22 +1,27 @@
 package com.example.myandroid.ui.dictionary
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myandroid.data.remote.DictionaryService
+import com.example.myandroid.model.WordDefinition
 import com.example.myandroid.ui.theme.MyAndroidTheme
 import com.example.myandroid.utils.MyResult
 
@@ -24,27 +29,68 @@ import com.example.myandroid.utils.MyResult
 fun DictionaryScreen(
     viewModel: DictionaryViewModel
 ) {
-    val wordDefinition = viewModel.wordDefinitionState.collectAsState().value
-    Column(modifier = Modifier) {
+    val wordDefinitionState = viewModel.searchedState.collectAsState()
+    val historyState = viewModel.historyState.collectAsState(initial = listOf())
+    var current by remember {
+        mutableStateOf(0)
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        when (current) {
+            0 -> Search(
+                modifier = Modifier.weight(1f),
+                onSearch = { text -> viewModel.loadWordDefinition(text) },
+                result = wordDefinitionState.value
+            )
+            1 -> History(
+                modifier = Modifier.weight(1f),
+                wordDefinitionList = historyState.value
+            )
+        }
+        BottomBar(
+            items = listOf(
+                Pair("Search", Icons.Filled.Search),
+                Pair("History", Icons.Filled.History)
+            ), selectedItem = current,
+            onSelect = { index -> current = index }
+        )
+    }
+
+}
+
+@Composable
+fun Search(
+    modifier: Modifier = Modifier,
+    onSearch: (String) -> Unit,
+    result: MyResult<WordDefinition>,
+) {
+    Column(modifier = modifier) {
         SearchBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(4.dp),
-            onSearch = { text -> viewModel.loadWordDefinition(text) })
-        when (wordDefinition) {
+            onSearch = onSearch
+        )
+
+        when (result) {
             is MyResult.Loading -> Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
             }
+
             is MyResult.Success -> {
-                WordDefinitionCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    word = wordDefinition.data.word, definitions = wordDefinition.data.definitions
-                )
+                LazyColumn() {
+                    item {
+                        WordDefinitionCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            word = result.data.word, definitions = result.data.definitions
+                        )
+                    }
+                }
             }
             is MyResult.Error -> {
                 Box(
@@ -52,12 +98,31 @@ fun DictionaryScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = wordDefinition.e.message ?: "Unknown Error",
+                        text = result.e.message ?: "Unknown Error",
                         textAlign = TextAlign.Center,
                         fontSize = 20.sp
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun History(
+    modifier: Modifier = Modifier,
+    wordDefinitionList: List<WordDefinition>,
+) {
+    LazyColumn(
+        modifier = modifier
+    ) {
+        items(wordDefinitionList) { item ->
+            WordDefinitionCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                word = item.word, definitions = item.definitions
+            )
         }
     }
 }
@@ -99,6 +164,27 @@ fun SearchBar(
 }
 
 @Composable
+fun BottomBar(
+    modifier: Modifier = Modifier,
+    items: List<Pair<String, ImageVector>>,
+    selectedItem: Int,
+    onSelect: (Int) -> Unit = {}
+) {
+    BottomNavigation(modifier = modifier) {
+        items.forEachIndexed { index, item ->
+            BottomNavigationItem(
+                selected = selectedItem == index,
+                onClick = { onSelect(index) },
+                icon = { Icon(imageVector = item.second, contentDescription = item.first) },
+                label = { Text(text = item.first) },
+                alwaysShowLabel = false,
+            )
+        }
+    }
+}
+
+
+@Composable
 fun WordDefinitionCard(
     modifier: Modifier = Modifier,
     word: String,
@@ -128,15 +214,6 @@ fun WordDefinitionCard(
     }
 }
 
-@Preview
-@Composable
-fun DictionaryScreenPreview() {
-    MyAndroidTheme {
-        Surface {
-//            DictionaryScreen(viewModel = DictionaryViewModel())
-        }
-    }
-}
 
 @Preview
 @Composable
@@ -144,6 +221,27 @@ fun SearchBarPreview() {
     MyAndroidTheme {
         Surface {
             SearchBar(modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+@Preview
+@Composable
+fun BottomBarPreview() {
+    MyAndroidTheme {
+        Surface {
+            var selectedItem by remember {
+                mutableStateOf(1)
+            }
+
+            BottomBar(
+                items = listOf(
+                    Pair("Search", Icons.Filled.Search),
+                    Pair("History", Icons.Filled.History)
+                ),
+                selectedItem = selectedItem,
+                onSelect = { index -> selectedItem = index }
+            )
         }
     }
 }

@@ -8,9 +8,9 @@ import com.example.myandroid.model.WordDefinition
 data class WordDefinitionEntity(
     @PrimaryKey
     val word : String,
-    val definitions : String,
+    val definitions : List<String>,
 )
 
 fun WordDefinitionEntity.asExternalModel() = WordDefinition(
-    word, listOf( definitions)
+    word, definitions
 )

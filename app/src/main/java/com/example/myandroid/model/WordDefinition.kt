@@ -8,7 +8,7 @@ data class WordDefinition(
 ) {
     fun asWordDefinitionEntity(): WordDefinitionEntity {
         return WordDefinitionEntity(
-            word, definitions.first()
+            word, definitions
         )
     }
 }

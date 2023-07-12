@@ -7,7 +7,9 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.squareup.moshi.Moshi
 
+
 @Database(entities = [WordDefinitionEntity::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordDefinitionDao(): WordDefinitionDao
 
@@ -21,7 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context = context,
                     klass = AppDatabase::class.java,
                     name = "app_database"
-                )
+                ).addTypeConverter(Converters(Moshi.Builder().build()))
                     .fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
