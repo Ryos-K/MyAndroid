@@ -23,6 +23,4 @@ interface WordDefinitionDao {
 
     @Delete
     suspend fun delete(wordDefinitionEntity: WordDefinitionEntity)
-
-
 }

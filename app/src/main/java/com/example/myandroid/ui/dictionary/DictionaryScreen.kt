@@ -1,9 +1,12 @@
 package com.example.myandroid.ui.dictionary
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -22,37 +25,53 @@ import androidx.compose.ui.unit.sp
 import com.example.myandroid.model.WordDefinition
 import com.example.myandroid.ui.theme.MyAndroidTheme
 import com.example.myandroid.utils.MyResult
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DictionaryScreen(
     viewModel: DictionaryViewModel
 ) {
+    val scope = rememberCoroutineScope()
+
     val wordDefinitionState = viewModel.searchedState.collectAsState()
     val historyState = viewModel.historyState.collectAsState(initial = listOf())
     var current by remember {
         mutableStateOf(0)
     }
+    val pagerState = rememberPagerState()
+    val bottomItems = listOf(
+        Pair("Search", Icons.Filled.Search),
+        Pair("History", Icons.Filled.EditNote)
+    )
 
     Column(modifier = Modifier.fillMaxSize()) {
-        when (current) {
-            0 -> Search(
-                modifier = Modifier.weight(1f),
-                onSearch = { text -> viewModel.loadWordDefinition(text) },
-                result = wordDefinitionState.value,
-                onRegister = viewModel::register
-            )
-            1 -> History(
-                modifier = Modifier.weight(1f),
-                wordDefinitionList = historyState.value,
-                onUnregister = viewModel::unregister
-            )
+        HorizontalPager(
+            modifier = Modifier.weight(1f),
+            pageCount = bottomItems.size,
+            state = pagerState
+        ) { index ->
+            when (index) {
+                0 -> Search(
+                    modifier = Modifier.fillMaxSize(),
+                    onSearch = { text -> viewModel.loadWordDefinition(text) },
+                    result = wordDefinitionState.value,
+                    onRegister = viewModel::register
+                )
+                1 -> History(
+                    modifier = Modifier.fillMaxSize(),
+                    wordDefinitionList = historyState.value,
+                    onUnregister = viewModel::unregister
+                )
+            }
         }
         BottomBar(
-            items = listOf(
-                Pair("Search", Icons.Filled.Search),
-                Pair("History", Icons.Filled.EditNote)
-            ), selectedItem = current,
-            onSelect = { index -> current = index }
+            items = bottomItems, selectedItem = pagerState.currentPage,
+            onSelect = { index ->
+                scope.launch {
+                    pagerState.scrollToPage(index)
+                }
+            }
         )
     }
 
@@ -88,10 +107,16 @@ fun Search(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp),
-                            word = result.data.word, definitions = result.data.definitions
-                        , optionIcon = { IconButton(onClick = { onRegister(result.data) }) {
-                                Icon(imageVector = Icons.Filled.EditNote, contentDescription = "remove word from history")
-                            }}
+                            word = result.data.word,
+                            definitions = result.data.definitions,
+                            optionIcon = {
+                                IconButton(onClick = { onRegister(result.data) }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.EditNote,
+                                        contentDescription = "remove word from history"
+                                    )
+                                }
+                            }
                         )
                     }
                 }
@@ -112,6 +137,7 @@ fun Search(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun History(
     modifier: Modifier = Modifier,
@@ -121,15 +147,21 @@ fun History(
     LazyColumn(
         modifier = modifier
     ) {
-        items(wordDefinitionList) { item ->
+        items(wordDefinitionList, key = { wordDefinition -> wordDefinition.word }) { item ->
             WordDefinitionCard(
                 modifier = Modifier
+                    .animateItemPlacement()
                     .fillMaxWidth()
                     .padding(8.dp),
                 word = item.word, definitions = item.definitions,
-                optionIcon = { IconButton(onClick = { onUnregister(item) }) {
-                    Icon(imageVector = Icons.Filled.Remove, contentDescription = "register word")
-                }}
+                optionIcon = {
+                    IconButton(onClick = { onUnregister(item) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Remove,
+                            contentDescription = "register word"
+                        )
+                    }
+                }
             )
         }
     }
@@ -210,7 +242,9 @@ fun WordDefinitionCard(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
