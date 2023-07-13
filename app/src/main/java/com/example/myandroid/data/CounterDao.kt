@@ -9,20 +9,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CounterDao {
     @Query("SELECT * from counters")
-    fun getAll() : Flow<List<Counter>>
+    fun getAll() : Flow<List<CounterEntity>>
 
     @Insert
-    suspend fun insert(counter: Counter)
+    suspend fun insert(counterEntity: CounterEntity)
 
     @Update
-    suspend fun update(counter: Counter)
+    suspend fun update(counterEntity: CounterEntity)
 
     @Query("DELETE FROM counters WHERE id = :CounterId")
     suspend fun deleteById(CounterId: Int): Int
-
-    @Query("UPDATE counters SET counter = counter + 1 WHERE id = :CounterId")
-    suspend fun incrementCounterById(CounterId: Int) : Int
-
-    @Query("UPDATE counters SET counter = counter - 1 WHERE id = :CounterId")
-    suspend fun decrementCounterById(CounterId: Int) : Int
 }

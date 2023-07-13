@@ -5,12 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myandroid.data.Counter
 import com.example.myandroid.data.CounterRepository
-import com.example.myandroid.data.toCounterUiState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
+import com.example.myandroid.model.Counter
+import com.example.myandroid.utils.MyResult
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 const val COUNTER_LIMIT = 99
@@ -19,41 +17,25 @@ class CounterViewModel(
     private val counterRepository: CounterRepository
 ) : ViewModel() {
 
-    private val _counterState = MutableStateFlow<CounterState>(CounterState.Loading)
-    val counterState = _counterState.asStateFlow()
-
     private val filterText = MutableStateFlow("")
 
-    val filteredState = filterText.combine(_counterState) { filter, state ->
-        filterByTitle(state, filter)
-    }
+    val counterListState = counterRepository.observeAll()
+        .combine<List<Counter>, String, MyResult<List<Counter>>>(filterText) { list, filter ->
+            MyResult.Success(
+                if (filter == "") list
+                else list.filter { item -> item.title.contains(filter) }
+            )
+        }
+        .onStart { emit(MyResult.Loading()) }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            initialValue = MyResult.Loading()
+        )
+
 
     var shouldShowSnackbar by mutableStateOf(false)
     private var lastDeleteCounter: Counter? = null
-
-    private fun filterByTitle(state: CounterState, filter: String): CounterState {
-        return when (state) {
-            is CounterState.Success -> {
-                if (filter == "") {
-                    state
-                }else {
-                    val filtered = state.counterCards.filter { it.title.startsWith(filter) }
-                    CounterState.Success(filtered)
-                }
-            }
-            else -> {
-                state
-            }
-        }
-    }
-
-    init {
-        viewModelScope.launch {
-            counterRepository.getAll().collect() { counters ->
-                _counterState.value = CounterState.Success(counters.map { it.toCounterUiState() })
-            }
-        }
-    }
 
     fun insertCounterCard(text: String) {
         viewModelScope.launch {
@@ -61,35 +43,31 @@ class CounterViewModel(
                 Counter(
                     id = 0,
                     title = text,
-                    counter = 0
+                    count = 0
                 )
             )
         }
     }
 
-    fun deleteCounterCard(counter: CounterUiState) {
+    fun deleteCounterCard(counter: Counter) {
         viewModelScope.launch {
             counterRepository.deleteById(counter.id)
-            lastDeleteCounter = counter.toCounter()
+            lastDeleteCounter = counter
             shouldShowSnackbar = true
         }
     }
 
-    fun incrementCounter(id: Int) {
+    fun incrementCounter(counter: Counter) {
         viewModelScope.launch {
-            val currentState = _counterState.value
-            if (currentState is CounterState.Success) {
-                counterRepository.incrementCounterById(id)
-            }
+            if (counter.count < COUNTER_LIMIT)
+                counterRepository.update(counter.copy(count = counter.count + 1))
         }
     }
 
-    fun decrementCounter(id: Int) {
+    fun decrementCounter(counter: Counter) {
         viewModelScope.launch {
-            val currentState = _counterState.value
-            if (currentState is CounterState.Success) {
-                counterRepository.decrementCounterById(id)
-            }
+            if (counter.count > 0)
+                counterRepository.update(counter.copy(count = counter.count - 1))
         }
     }
 

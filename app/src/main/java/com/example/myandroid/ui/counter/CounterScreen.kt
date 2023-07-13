@@ -1,7 +1,5 @@
 package com.example.myandroid.ui.counter
 
-import android.content.res.Configuration.UI_MODE_NIGHT_NO
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -22,25 +20,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.viewModelScope
+import com.example.myandroid.model.Counter
 import com.example.myandroid.ui.theme.MyAndroidTheme
-import kotlinx.coroutines.launch
+import com.example.myandroid.utils.MyResult
 
 
 @Composable
 fun CounterScreen(
     viewModel: CounterViewModel
 ) {
-    val state = viewModel.filteredState.collectAsState(CounterState.Loading).value
-    when (state) {
-        is CounterState.Loading -> {
+    when (val state = viewModel.counterListState.collectAsState().value) {
+        is MyResult.Loading -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -48,12 +44,13 @@ fun CounterScreen(
                 CircularProgressIndicator()
             }
         }
-        is CounterState.Success -> {
+        is MyResult.Success -> {
+
             CounterSuccessScreen(
-                counterCardList = state.counterCards,
+                counterCardList = state.data,
                 onDelete = { counter -> viewModel.deleteCounterCard(counter) },
-                onClickPlus = { id -> viewModel.incrementCounter(id) },
-                onClickMinus = { id -> viewModel.decrementCounter(id) },
+                onClickPlus = { counter -> viewModel.incrementCounter(counter) },
+                onClickMinus = { counter -> viewModel.decrementCounter(counter) },
                 onDoneDialog = { text -> viewModel.insertCounterCard(text) },
                 onSearch = { text -> viewModel.setFilterText(text) },
                 shouldDisplayUndoSnackbar = viewModel.shouldShowSnackbar,
@@ -61,7 +58,7 @@ fun CounterScreen(
                 onAcceptSnackbar = {viewModel.acceptUndo()},
             )
         }
-        is CounterState.Error -> {
+        is MyResult.Error -> {
 
         }
     }
@@ -70,10 +67,10 @@ fun CounterScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CounterSuccessScreen(
-    counterCardList: List<CounterUiState>,
-    onDelete: (CounterUiState) -> Unit = {},
-    onClickPlus: (Int) -> Unit = {},
-    onClickMinus: (Int) -> Unit = {},
+    counterCardList: List<Counter>,
+    onDelete: (Counter) -> Unit = {},
+    onClickPlus: (Counter) -> Unit = {},
+    onClickMinus: (Counter) -> Unit = {},
     onDoneDialog: (String) -> Unit = {},
     onSearch: (String) -> Unit = {},
     shouldDisplayUndoSnackbar: Boolean = false,
@@ -132,12 +129,12 @@ private fun CounterSuccessScreen(
                     modifier = Modifier
                         .animateItemPlacement()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    uiState = card,
+                    counter = card,
                     onDelete = {
                         onDelete(card)
                     },
-                    onClickPlus = { onClickPlus(card.id) },
-                    onClickMinus = { onClickMinus(card.id) }
+                    onClickPlus = { onClickPlus(card) },
+                    onClickMinus = { onClickMinus(card) }
                 )
             }
         }
@@ -190,7 +187,7 @@ private fun CounterBottomAppBar(
 @Composable
 private fun CounterCard(
     modifier: Modifier = Modifier,
-    uiState: CounterUiState,
+    counter: Counter,
     onDelete: () -> Unit,
     onClickPlus: () -> Unit,
     onClickMinus: () -> Unit,
@@ -212,14 +209,14 @@ private fun CounterCard(
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(uiState.title, Modifier.weight(1f), fontSize = 24.sp)
+                Text(counter.title, Modifier.weight(1f), fontSize = 24.sp)
                 IconButton(onClick = { onDelete() }) {
                     Icon(imageVector = Icons.Filled.Delete, contentDescription = "Option")
                 }
             }
             Counter(
                 modifier = Modifier.padding(16.dp, 4.dp, 16.dp, 16.dp),
-                counter = uiState.counter,
+                count = counter.count,
                 onClickPlus = onClickPlus,
                 onClickMinus = onClickMinus
             )
@@ -231,7 +228,7 @@ private fun CounterCard(
 @Composable
 private fun Counter(
     modifier: Modifier = Modifier,
-    counter: Int,
+    count: Int,
     onClickPlus: () -> Unit,
     onClickMinus: () -> Unit,
 ) {
@@ -241,7 +238,7 @@ private fun Counter(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                counter.toString(),
+                count.toString(),
                 textAlign = TextAlign.Center,
                 fontSize = 30.sp,
             )
@@ -368,14 +365,14 @@ fun CounterSuccessScreenPreview() {
     MyAndroidTheme {
         Surface {
             val list = listOf(
-                CounterUiState(1, "Counter 1", 0),
-                CounterUiState(2, "Counter 2", 2),
-                CounterUiState(3, "Counter 3", 4),
-                CounterUiState(4, "Counter 4", 10),
-                CounterUiState(5, "Counter 5", 40),
-                CounterUiState(6, "Counter 6", 50),
-                CounterUiState(7, "Counter 7", 60),
-                CounterUiState(8, "Counter 8", 70),
+                Counter(1, "Counter 1", 0),
+                Counter(2, "Counter 2", 2),
+                Counter(3, "Counter 3", 4),
+                Counter(4, "Counter 4", 10),
+                Counter(5, "Counter 5", 40),
+                Counter(6, "Counter 6", 50),
+                Counter(7, "Counter 7", 60),
+                Counter(8, "Counter 8", 70),
             )
             CounterSuccessScreen(
                 counterCardList = list,
