@@ -1,5 +1,7 @@
 package com.example.myandroid.data
 
+import com.example.myandroid.database.dao.CounterDao
+import com.example.myandroid.database.entity.asExternalModel
 import com.example.myandroid.model.Counter
 import kotlinx.coroutines.flow.map
 

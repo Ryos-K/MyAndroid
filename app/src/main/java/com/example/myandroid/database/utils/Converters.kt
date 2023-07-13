@@ -1,4 +1,4 @@
-package com.example.myandroid.data.local
+package com.example.myandroid.database.utils
 
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter

@@ -1,6 +1,6 @@
 package com.example.myandroid.model
 
-import com.example.myandroid.data.local.WordDefinitionEntity
+import com.example.myandroid.database.entity.WordDefinitionEntity
 import java.util.*
 
 data class WordDefinition(

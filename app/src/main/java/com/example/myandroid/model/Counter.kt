@@ -1,6 +1,7 @@
 package com.example.myandroid.model
 
-import com.example.myandroid.data.CounterEntity
+import com.example.myandroid.database.entity.CounterEntity
+
 
 data class Counter(
     val id: Int,

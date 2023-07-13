@@ -1,4 +1,4 @@
-package com.example.myandroid.data.remote
+package com.example.myandroid.network
 
 import com.example.myandroid.model.WordDefinition
 

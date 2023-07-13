@@ -1,7 +1,7 @@
-package com.example.myandroid.data.local
+package com.example.myandroid.database.dao
 
 import androidx.room.*
-import com.example.myandroid.model.WordDefinition
+import com.example.myandroid.database.entity.WordDefinitionEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
