@@ -30,15 +30,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DictionaryScreen(
-    viewModel: DictionaryViewModel
+    viewModel: DictionaryViewModel,
+    onOpenDrawer: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
 
     val wordDefinitionState = viewModel.searchedState.collectAsState()
     val historyState = viewModel.historyState.collectAsState(initial = listOf())
-    var current by remember {
-        mutableStateOf(0)
-    }
+
     val pagerState = rememberPagerState()
     val bottomItems = listOf(
         Pair("Search", Icons.Filled.Search),
@@ -46,10 +45,12 @@ fun DictionaryScreen(
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
+
         HorizontalPager(
             modifier = Modifier.weight(1f),
             pageCount = bottomItems.size,
-            state = pagerState
+            state = pagerState,
+            userScrollEnabled = false,
         ) { index ->
             when (index) {
                 0 -> Search(
@@ -69,7 +70,7 @@ fun DictionaryScreen(
             items = bottomItems, selectedItem = pagerState.currentPage,
             onSelect = { index ->
                 scope.launch {
-                    pagerState.scrollToPage(index)
+                    pagerState.animateScrollToPage(index)
                 }
             }
         )
@@ -183,7 +184,7 @@ fun SearchBar(
             modifier = Modifier.fillMaxWidth(),
             value = text,
             onValueChange = { text = it },
-            label = { Text(text = "Search Word") },
+            label = { Text(text = "Search Word")},
             leadingIcon = {
                 IconButton(onClick = { onSearch(text) }) {
                     Icon(
