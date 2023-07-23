@@ -12,23 +12,4 @@ interface DictionaryService {
     suspend fun getWordInfo(
         @Path("word") word: String
     ): List<WordInfoDto>
-
-    companion object {
-        private const val BASE_URL = "https://api.dictionaryapi.dev/"
-
-        fun create(): DictionaryService {
-            val logger =
-                HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC }
-
-            val client = OkHttpClient.Builder().addInterceptor(logger).build()
-
-            return Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .client(client)
-                .addConverterFactory(MoshiConverterFactory.create())
-                .build()
-                .create(DictionaryService::class.java)
-        }
-    }
-
 }

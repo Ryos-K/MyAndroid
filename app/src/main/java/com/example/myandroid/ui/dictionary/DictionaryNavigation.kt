@@ -12,11 +12,10 @@ fun NavController.navigateToDictionary(navOptions: NavOptions? = null) {
     this.navigate(dictionaryNavigationRoute, navOptions)
 }
 
-fun NavGraphBuilder.dictionaryScreen(repository: WordInfoRepository, onOpenDrawer: () -> Unit = {}) {
+fun NavGraphBuilder.dictionaryScreen(onOpenDrawer: () -> Unit = {}) {
     composable(
         route = dictionaryNavigationRoute
     ) {
-        val viewModel = DictionaryViewModel(repository)
-        DictionaryScreen(viewModel = viewModel, onOpenDrawer = onOpenDrawer)
+        DictionaryScreen(onOpenDrawer = onOpenDrawer)
     }
 }

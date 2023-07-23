@@ -5,13 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.myandroid.data.WordInfoRepository
 import com.example.myandroid.model.WordDefinition
 import com.example.myandroid.utils.MyResult
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.util.*
+import javax.inject.Inject
 
-class DictionaryViewModel(
+@HiltViewModel
+class DictionaryViewModel @Inject constructor(
     private val wordInfoRepository: WordInfoRepository
 ) : ViewModel() {
 

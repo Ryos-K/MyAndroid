@@ -13,27 +13,13 @@ import com.example.myandroid.database.utils.Converters
 import com.squareup.moshi.Moshi
 
 
-@Database(entities = [WordDefinitionEntity::class, CounterEntity::class], version = 2, exportSchema = false)
+@Database(
+    entities = [WordDefinitionEntity::class, CounterEntity::class],
+    version = 2,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wordDefinitionDao(): WordDefinitionDao
-    abstract fun counterDao() : CounterDao
-
-    companion object {
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
-
-        fun getDatabase(context: Context): AppDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context = context,
-                    klass = AppDatabase::class.java,
-                    name = "app_database"
-                ).addTypeConverter(Converters(Moshi.Builder().build()))
-                    .fallbackToDestructiveMigration().build()
-                INSTANCE = instance
-                instance
-            }
-        }
-    }
+    abstract fun counterDao(): CounterDao
 }

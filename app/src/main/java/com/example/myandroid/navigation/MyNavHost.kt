@@ -17,18 +17,15 @@ fun MyNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     startDestination: String,
-    database: AppDatabase,
     onOpenDrawer: () -> Unit = {}
 ) {
-    val counterRepository = CounterRepository(database.counterDao())
-    val wordInfoRepository = WordInfoRepository(database.wordDefinitionDao(), DictionaryService.create())
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
 
-        counterScreen(counterRepository)
-        dictionaryScreen(wordInfoRepository, onOpenDrawer)
+        counterScreen()
+        dictionaryScreen(onOpenDrawer)
     }
 }
