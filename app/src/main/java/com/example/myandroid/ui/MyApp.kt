@@ -28,7 +28,7 @@ import com.example.myandroid.ui.dictionary.dictionaryNavigationRoute
 import kotlinx.coroutines.launch
 
 @Composable
-fun MyApp(database: AppDatabase) {
+fun MyApp() {
 
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -58,7 +58,7 @@ fun MyApp(database: AppDatabase) {
                     icon = dest.icon,
                     title = dest.title,
                     onClick = {
-                        navController.navigateToTopLevelDestination(dest)
+                        navController.navigateToTopLevelDestination(dest, navOptions)
                         scope.launch { drawerState.close() }
                     })
             }
@@ -67,7 +67,7 @@ fun MyApp(database: AppDatabase) {
 
         MyNavHost(
             navController = navController,
-            startDestination = counterNavigationRoute, database = database,
+            startDestination = counterNavigationRoute,
             onOpenDrawer = {
                 scope.launch {
                     drawerState.open()

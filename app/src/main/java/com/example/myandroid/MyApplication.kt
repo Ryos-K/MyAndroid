@@ -2,7 +2,7 @@ package com.example.myandroid
 
 import android.app.Application
 import com.example.myandroid.database.AppDatabase
+import dagger.hilt.android.HiltAndroidApp
 
-class MyApplication : Application() {
-    val database by lazy { AppDatabase.getDatabase(this)}
-}
+@HiltAndroidApp
+class MyApplication : Application()
