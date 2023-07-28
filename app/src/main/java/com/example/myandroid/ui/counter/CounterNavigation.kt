@@ -12,11 +12,10 @@ fun NavController.navigationToCounter(navOptions: NavOptions? = null) {
     this.navigate(counterNavigationRoute, navOptions)
 }
 
-fun NavGraphBuilder.counterScreen(repository: CounterRepository) {
+fun NavGraphBuilder.counterScreen() {
     composable(
         route = counterNavigationRoute,
     ) {
-        val viewModel = CounterViewModel(repository)
-        CounterScreen(viewModel = viewModel)
+        CounterScreen()
     }
 }

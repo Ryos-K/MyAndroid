@@ -8,12 +8,15 @@ import androidx.lifecycle.viewModelScope
 import com.example.myandroid.data.CounterRepository
 import com.example.myandroid.model.Counter
 import com.example.myandroid.utils.MyResult
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 const val COUNTER_LIMIT = 99
 
-class CounterViewModel(
+@HiltViewModel
+class CounterViewModel @Inject constructor(
     private val counterRepository: CounterRepository
 ) : ViewModel() {
 

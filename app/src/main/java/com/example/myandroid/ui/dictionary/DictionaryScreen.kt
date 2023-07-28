@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myandroid.model.WordDefinition
 import com.example.myandroid.ui.theme.MyAndroidTheme
 import com.example.myandroid.utils.MyResult
@@ -30,7 +31,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DictionaryScreen(
-    viewModel: DictionaryViewModel,
+    viewModel: DictionaryViewModel = hiltViewModel(),
     onOpenDrawer: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
