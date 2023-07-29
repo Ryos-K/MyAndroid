@@ -31,8 +31,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DictionaryScreen(
-    viewModel: DictionaryViewModel = hiltViewModel(),
-    onOpenDrawer: () -> Unit = {}
+    viewModel: DictionaryViewModel = hiltViewModel()
 ) {
     val scope = rememberCoroutineScope()
 

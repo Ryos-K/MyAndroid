@@ -18,7 +18,6 @@ fun MyNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     startDestination: String,
-    onOpenDrawer: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -27,7 +26,7 @@ fun MyNavHost(
     ) {
 
         counterScreen()
-        dictionaryScreen(onOpenDrawer)
+        dictionaryScreen()
         viewerScreen()
     }
 }

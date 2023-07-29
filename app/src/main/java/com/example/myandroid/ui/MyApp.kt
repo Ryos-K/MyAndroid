@@ -69,11 +69,6 @@ fun MyApp() {
         MyNavHost(
             navController = navController,
             startDestination = counterNavigationRoute,
-            onOpenDrawer = {
-                scope.launch {
-                    drawerState.open()
-                }
-            }
         )
     }
 }

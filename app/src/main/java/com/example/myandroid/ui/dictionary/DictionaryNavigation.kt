@@ -12,10 +12,10 @@ fun NavController.navigateToDictionary(navOptions: NavOptions? = null) {
     this.navigate(dictionaryNavigationRoute, navOptions)
 }
 
-fun NavGraphBuilder.dictionaryScreen(onOpenDrawer: () -> Unit = {}) {
+fun NavGraphBuilder.dictionaryScreen() {
     composable(
         route = dictionaryNavigationRoute
     ) {
-        DictionaryScreen(onOpenDrawer = onOpenDrawer)
+        DictionaryScreen()
     }
 }
