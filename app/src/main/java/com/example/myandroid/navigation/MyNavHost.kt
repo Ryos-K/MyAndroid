@@ -11,6 +11,7 @@ import com.example.myandroid.database.AppDatabase
 import com.example.myandroid.network.DictionaryService
 import com.example.myandroid.ui.counter.counterScreen
 import com.example.myandroid.ui.dictionary.dictionaryScreen
+import com.example.myandroid.ui.viewer.viewerScreen
 
 @Composable
 fun MyNavHost(
@@ -27,5 +28,6 @@ fun MyNavHost(
 
         counterScreen()
         dictionaryScreen(onOpenDrawer)
+        viewerScreen()
     }
 }

@@ -43,7 +43,8 @@ fun MyApp() {
 
     val topLevelDestinations = listOf(
         TopLevelDestination.Counter,
-        TopLevelDestination.Dictionary
+        TopLevelDestination.Dictionary,
+        TopLevelDestination.Viewer
     )
 
     ModalDrawer(
