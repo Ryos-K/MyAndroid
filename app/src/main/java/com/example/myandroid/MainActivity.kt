@@ -20,4 +20,10 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    companion object {
+        init {
+            System.loadLibrary("myandroid")
+        }
+    }
 }

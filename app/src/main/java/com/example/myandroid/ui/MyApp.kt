@@ -41,11 +41,6 @@ fun MyApp() {
     val currentDestination = navController.currentBackStackEntryAsState().value?.destination?.route
         ?: counterNavigationRoute
 
-    val topLevelDestinations = listOf(
-        TopLevelDestination.Counter,
-        TopLevelDestination.Dictionary,
-        TopLevelDestination.Viewer
-    )
 
     ModalDrawer(
         drawerState = drawerState,
@@ -53,7 +48,7 @@ fun MyApp() {
         drawerContent = {
             Text(text = "MyAndroid", fontSize = 32.sp, modifier = Modifier.fillMaxWidth().padding(12.dp))
             Divider(color = MaterialTheme.colors.onBackground)
-            topLevelDestinations.forEach { dest ->
+                TopLevelDestination.values().forEach { dest ->
                 DrawerItem(
                     isSelected = currentDestination == dest.route,
                     icon = dest.icon,
